@@ -24,14 +24,12 @@ clean:
 	@docker system prune --volumes --force
 
 up:
-	docker-compose up -d php-fpm
-	#@docker-compose up -d php-fpm nginx postgres cassandra elasticsearch kibana grafana sonarqube kafka kafka-manager --remove-orphans
-
+	docker-compose up -d
 down:
 	@docker-compose down
 bash:
 	@docker-compose exec workspace bash
-
+restart: down up
 replica:
 	@docker-compose exec postgres /var/lib/postgresql/config/replica.sh
 	@docker-compose up -d postgres
@@ -41,4 +39,4 @@ phpstan:
 	@docker-compose exec workspace /var/www/vendor/bin/phpstan analyse
 insights:
 	@docker-compose exec workspace php artisan insights
-restart: down up
+

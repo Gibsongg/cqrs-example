@@ -1,6 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserFollowController;
+use App\User\Http\Controllers\RegistrationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +17,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::get('/docs/', function () {
+    return file_get_contents(resource_path('openapi.yaml'));
+});
+
+Route::post('auth/login', [UserController::class, 'login']);
+Route::post('auth/registration', [UserController::class, 'registration']);
+Route::post('user/{id}/profile', [UserController::class, 'editProfile']);
+
+
+Route::middleware('auth:sanctum')->group(function() {
+    Route::post('user/follow/{userId}', [UserFollowController::class, 'subscribe']);
+
+    Route::get('posts', [PostController::class, 'index']);
+    Route::post('posts', [PostController::class, 'create']);
+    Route::put('posts/{postId}', [PostController::class, 'update']);
+    Route::post('posts/{postId}', [PostController::class, 'destroy']);
+
 });

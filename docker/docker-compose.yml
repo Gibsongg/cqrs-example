@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.5'ng
 
 networks:
   frontend:
@@ -22,8 +22,6 @@ volumes:
   redis:
     driver: ${VOLUMES_DRIVER}
   elasticsearch:
-    driver: ${VOLUMES_DRIVER}
-  cassandra:
     driver: ${VOLUMES_DRIVER}
   docker-in-docker:
     driver: ${VOLUMES_DRIVER}
@@ -386,47 +384,13 @@ services:
         backend:
             ipv4_address: 172.20.0.21
 
-
-
   ### Redis ################################################
-#    redis:
-#      build: ./redis
-#      volumes:
-#        - ${DATA_PATH_HOST}/redis:/data
-#      ports:
-#        - "${REDIS_PORT}:6379"
-#      networks:
-#        - backend
-
-### Cassandra ############################################
-    cassandra:
-      build: ./cassandra
-      ports:
-        - "${CASSANDRA_TRANSPORT_PORT_NUMBER}:7000"
-        - "${CASSANDRA_JMX_PORT_NUMBER}:7199"
-        - "${CASSANDRA_CQL_PORT_NUMBER}:9042"
-      privileged: true
-      environment:
-        - CASSANDRA_VERSION=${CASSANDRA_VERSION}
-        - CASSANDRA_TRANSPORT_PORT_NUMBER=${CASSANDRA_TRANSPORT_PORT_NUMBER}
-        - CASSANDRA_JMX_PORT_NUMBER=${CASSANDRA_JMX_PORT_NUMBER}
-        - CASSANDRA_CQL_PORT_NUMBER=${CASSANDRA_CQL_PORT_NUMBER}
-        - CASSANDRA_USER=${CASSANDRA_USER}
-        - CASSANDRA_PASSWORD_SEEDER=${CASSANDRA_PASSWORD_SEEDER}
-        - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
-        - CASSANDRA_NUM_TOKENS=${CASSANDRA_NUM_TOKENS}
-        - CASSANDRA_HOST=${CASSANDRA_HOST}
-        - CASSANDRA_CLUSTER_NAME=${CASSANDRA_CLUSTER_NAME}
-        - CASSANDRA_SEEDS=${CASSANDRA_SEEDS}
-        - CASSANDRA_ENDPOINT_SNITCH=${CASSANDRA_ENDPOINT_SNITCH}
-        - CASSANDRA_ENABLE_RPC=${CASSANDRA_ENABLE_RPC}
-        - CASSANDRA_DATACENTER=${CASSANDRA_DATACENTER}
-        - CASSANDRA_RACK=${CASSANDRA_RACK}
-      hostname: laradock-cassandra
+    redis:
+      build: ./redis
       volumes:
-        - ${DATA_PATH_HOST}/cassandra:/var/lib/cassandra
-      depends_on:
-        - php-fpm
+        - ${DATA_PATH_HOST}/redis:/data
+      ports:
+        - "6379:6379"
       networks:
         - backend
 
@@ -460,52 +424,6 @@ services:
         - frontend
         - backend
 
-### Logstash ##############################################
-#    logstash:
-#      build:
-#        context: ./logstash
-#        args:
-#          - ELK_VERSION=${ELK_VERSION}
-#      volumes:
-#        - './logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml'
-#        - './logstash/pipeline:/usr/share/logstash/pipeline'
-#      ports:
-#        - '5001:5001'
-#      environment:
-#        LS_JAVA_OPTS: '-Xmx1g -Xms1g'
-#      env_file:
-#        - .env
-#      networks:
-#        - frontend
-#        - backend
-#      depends_on:
-#        - elasticsearch
-
-### Kibana ##############################################
-    kibana:
-      build:
-        context: ./kibana
-        args:
-          - ELK_VERSION=${ELK_VERSION}
-      ports:
-        - "${KIBANA_HTTP_PORT}:5601"
-      depends_on:
-        - elasticsearch
-      networks:
-        - frontend
-        - backend
-
-## Grafana ################################################
-    grafana:
-      build:
-        context: ./grafana
-      volumes:
-        - ${DATA_PATH_HOST}/grafana:/var/lib/grafana
-      ports:
-        - "${GRAFANA_PORT}:3000"
-      networks:
-        - backend
-
 ### Docker-in-Docker ################################################
     docker-in-docker:
       image: docker:19.03-dind
@@ -517,20 +435,6 @@ services:
         - docker-in-docker:/certs/client
       expose:
         - 2375
-      networks:
-        - backend
-
-### NetData ################################################
-    netdata:
-      image: netdata/netdata:latest
-      cap_add:
-        - SYS_PTRACE
-      volumes:
-        - /proc:/host/proc:ro
-        - /sys:/host/sys:ro
-        - /var/run/docker.sock:/var/run/docker.sock:ro
-      ports:
-        - "${NETDATA_PORT}:19999"
       networks:
         - backend
 
@@ -576,3 +480,22 @@ services:
       command: -Dpidfile.path=/dev/null
       depends_on:
         - kafka
+  ### SWAGGER EDITOR ############################################
+    swagger-editor:
+      build: ./swagger-editor
+      environment:
+        - SWAGGER_FILE=../resources/openapi.yaml
+      ports:
+        - ${SWAGGER_EDITOR_PORT}:8080
+      networks:
+        - backend
+
+  ### SWAGGER UI ################################################
+    swagger-ui:
+      build: ./swagger-ui
+      environment:
+        - API_URL=${SWAGGER_API_URL}
+      ports:
+        - ${SWAGGER_UI_PORT}:8080
+      networks:
+        - backend

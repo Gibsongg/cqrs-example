@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories\Commands;
 
 use App\Models\Profile;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 

@@ -12,13 +12,12 @@ use Illuminate\Support\Facades\DB;
 
 final class PostQueryRepository
 {
-    public function getPostsList(string $userId): Collection
+    public function getPostsList(string $userId, int $limit = 20): Collection
     {
         return DB::table('posts')
             ->join('users_posts', 'post_id', '=', 'id')
-            //->joinWhere()
             ->where('users_posts.user_id', $userId)
-            ->limit(100)
+            ->limit($limit)
             ->get();
     }
 

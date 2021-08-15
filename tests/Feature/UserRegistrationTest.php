@@ -16,12 +16,19 @@ class UserRegistrationTest extends TestAbstract
      *
      * @return void
      */
-    public function test_example()
+    public function testRegistrationAndLogin(): void
     {
         $response = $this->postJson('/api/auth/registration', [
             'email' => $this->login1,
             'password' => 'secret',
             'password_confirmation' => 'secret',
+        ]);
+
+        $response->assertStatus(200);
+
+        $response = $this->postJson('/api/auth/login', [
+            'email' => $this->login1,
+            'password' => 'secret',
         ]);
 
         $response->assertStatus(200);

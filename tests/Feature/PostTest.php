@@ -10,8 +10,6 @@ class PostTest extends TestAbstract
 {
     use RefreshDatabase;
 
-
-
     public function setUp(): void
     {
         parent::setUp();
@@ -19,10 +17,9 @@ class PostTest extends TestAbstract
         $this->seed(UserSeeder::class);
     }
 
-    public function test_example()
+
+    public function testCreate(): void
     {
-        //$this->seed(UserSeeder::class);
-        //die;
         $token = $this->token('user1@mail.ru');
 
         $response = $this->postJson(
@@ -47,5 +44,41 @@ class PostTest extends TestAbstract
         ]);
 
         self::assertEquals(2, $postCountUser);
+    }
+
+    public function testRead(): void
+    {
+        DB::table('users_posts')->delete();
+
+        $token = $this->token('user1@mail.ru');
+
+        $this->postJson(
+            'api/posts',
+            [
+                'title' => 'post1',
+                'message' => 'post1',
+            ],
+            [
+                'Authorization' => $token
+            ]
+        );
+
+        $response = $this->getJson(
+            'api/posts',
+            [
+                'Authorization' => $token
+            ]
+        );
+
+        self::assertCount(1, $response->json());
+
+        $response = $this->getJson(
+            'api/posts',
+            [
+                'Authorization' => $this->token('user2@mail.ru')
+            ]
+        );
+
+        self::assertCount(1, $response->json());
     }
 }

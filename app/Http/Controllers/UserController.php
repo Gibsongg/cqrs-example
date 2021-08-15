@@ -7,23 +7,20 @@ use App\Factories\Users\RegistrationFactory;
 use App\Http\Requests\UserLogin;
 use App\Http\Requests\UserProfile;
 use App\Http\Requests\UserRegistration;
-use App\Services\UserService;
+use App\Services\Commands\UserCommandService;
 use App\Models\User;
-use App\Repositories\UserRepository;
-use http\Exception\RuntimeException;
+use RuntimeException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 final class UserController extends Controller
 {
-    private UserService $userService;
-    private UserRepository $userRepository;
+    private UserCommandService $userCommandService;
 
     public function __construct()
     {
-        $this->userService = app()->get(UserService::class);
-        $this->userRepository = app()->get(UserRepository::class);
+        $this->userCommandService = app()->get(UserCommandService::class);
     }
 
     /**
@@ -33,7 +30,7 @@ final class UserController extends Controller
     public function registration(UserRegistration $request): Response
     {
         $factory = RegistrationFactory::factory($request->input('email'), $request->input('password'));
-        $this->userService->create($factory);
+        $this->userCommandService->create($factory);
 
         return response(['success' => true, 'id' => $factory->id]);
     }
@@ -44,7 +41,8 @@ final class UserController extends Controller
     public function login(UserLogin $request): Response
     {
         /** @var User $user */
-        $user = User::query()->where('email', $request->input('email'))->firstOrFail();
+        //Если используется запрос где нужно получить актуальные данные читаем из таблицы записи useWritePdo()
+        $user = User::query()->useWritePdo()->where('email', $request->input('email'))->firstOrFail();
         if (!Hash::check($request->input('password'), $user->password)) {
             throw new RuntimeException('Логин и пароль не равны');
         }
@@ -63,7 +61,8 @@ final class UserController extends Controller
     public function editProfile(string $id, UserProfile $request): Response
     {
         $userProfile = new UserProfileDto($request->toArray());
-        $this->userService->editProfile($id, $userProfile);
+        $this->userCommandService->editProfile($id, $userProfile);
+
         return response(['success' => true]);
     }
 }

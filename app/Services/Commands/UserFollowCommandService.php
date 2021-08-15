@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Commands;
 
 use App\Dictionaries\UserStatus;
 use App\Dto\User\UserProfileDto;
@@ -14,7 +14,7 @@ use RuntimeException;
 use Ramsey\Uuid\Nonstandard\Uuid;
 use Throwable;
 
-class UserFollowService
+class UserFollowCommandService
 {
     /**
      * Подписка и отписка на пользователей

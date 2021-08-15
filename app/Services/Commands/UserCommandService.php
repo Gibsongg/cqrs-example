@@ -2,21 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Commands;
 
 use App\Dto\User\UserProfileDto;
-use App\Models\Profile;
 use App\Models\User;
-use App\Repositories\UserProfileRepository;
-use App\Repositories\UserRepository;
+use App\Repositories\Commands\UserCommandRepository;
+use App\Repositories\Commands\UserProfileCommandRepository;
 use Throwable;
 
-class UserService
+class UserCommandService
 {
-    protected UserRepository $userRepository;
-    protected UserProfileRepository $profileRepository;
+    protected UserCommandRepository $userRepository;
+    protected UserProfileCommandRepository $profileRepository;
 
-    public function __construct(UserRepository $userRepository, UserProfileRepository $profileRepository)
+    public function __construct(UserCommandRepository $userRepository, UserProfileCommandRepository $profileRepository)
     {
         $this->userRepository = $userRepository;
         $this->profileRepository = $profileRepository;
@@ -26,9 +25,9 @@ class UserService
     /**
      * @throws \Throwable
      */
-    public function create(User $user): User
+    public function create(User $user): void
     {
-        return $this->userRepository->registration($user);
+        $this->userRepository->registration($user);
     }
 
 
@@ -37,9 +36,11 @@ class UserService
      *
      * @throws Throwable
      */
-    public function editProfile(string $userId, UserProfileDto $profileDto): Profile
+    public function editProfile(string $userId, UserProfileDto $profileDto): void
     {
-        $this->userRepository->findUserByIdOrFail($userId);
+        if (false === $this->userRepository->hasUserById($userId)) {
+            throw new \RuntimeException('Нет такого пользователя');
+        }
 
         $profile = $this->profileRepository->findUserProfileByIdOrNew($userId);
 
@@ -57,6 +58,6 @@ class UserService
             $profile->birthday = $profileDto->birthday;
         }
 
-        return $this->profileRepository->update($profile);
+        $this->profileRepository->update($profile);
     }
 }

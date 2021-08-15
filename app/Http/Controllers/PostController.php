@@ -3,28 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Dto\Post\PostDto;
+use App\Factories\Users\PostCreateFactory;
 use App\Http\Requests\PostCreateRequest;
-use App\Services\PostService;
+use App\Services\Commands\PostCommandService;
+use App\Services\Queries\PostQueryService;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 
 final class PostController extends Controller
 {
 
-    private PostService $postService;
+    private PostCommandService $postCommandService;
+    private PostQueryService $postQueryService;
 
     public function __construct()
     {
-        $this->postService = app()->get(PostService::class);
+        $this->postCommandService = app()->get(PostCommandService::class);
+        $this->postQueryService = app()->get(PostQueryService::class);
     }
 
     public function index(): Response
     {
-        $posts = $this->postService->postsList();
-
         return response(
             [
-                'data' => $this->postService->postsList()
+                'data' => $this->postQueryService->postsList()
             ]
         );
     }
@@ -34,28 +35,32 @@ final class PostController extends Controller
      */
     public function create(PostCreateRequest $request): Response
     {
-        $postDto = new PostDto($request->toArray());
-        $postDto->user_id = Auth::id();
+        $postDto = new PostDto($request->input());
 
-        $post = $this->postService->create($postDto);
+        $postFactory = PostCreateFactory::factory($postDto);
 
-        return response(['success' => true, 'id' => $post->id]);
+        $this->postCommandService->create($postFactory);
+
+        return response(['success' => true, 'id' => $postFactory->id]);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function update(string $postId, PostCreateRequest $request): Response
     {
         $postDto = new PostDto();
         $postDto->title = $request->input('title');
         $postDto->message = $request->input('message');
 
-        $this->postService->update($postId, $postDto);
+        $this->postCommandService->update($postId, $postDto);
 
         return response(['success' => true]);
     }
 
     public function destroy(string $postId): Response
     {
-        $this->postService->delete($postId);
+        $this->postCommandService->delete($postId);
 
         return response(['success' => true]);
     }

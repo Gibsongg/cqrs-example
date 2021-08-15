@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace App\Repositories\Queries;
 
 use App\Models\Profile;
+use App\Repositories\QueryRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
-final class UserProfileRepository
+final class UserProfileQueryRepository extends QueryRepository
 {
 
     public function findUserProfileByIdOrNew(string $id): Builder|Profile
     {
-        return Profile::query()->findOrNew($id);
+        return Profile::on($this->connection)->findOrNew($id);
     }
 
     /**
@@ -21,7 +22,7 @@ final class UserProfileRepository
      */
     public function update(Profile $profile): Profile
     {
-        $profile->saveOrFail();
+        $profile->on($this->connection)->saveOrFail();
 
         return $profile;
     }

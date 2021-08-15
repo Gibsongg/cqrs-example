@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Commands\UserFollowCommandService;
 use App\Services\UserFollowService;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
@@ -16,13 +17,16 @@ use Illuminate\Support\Facades\Auth;
 final class UserFollowController extends Controller
 {
 
-    private UserFollowService $followService;
+    private UserFollowCommandService $followCommandService;
 
     public function __construct()
     {
-        $this->followService = app()->get(UserFollowService::class);
+        $this->followCommandService = app()->get(UserFollowCommandService::class);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function subscribe(string $userId): Response|Application|ResponseFactory
     {
         /** @var User $user */
@@ -32,11 +36,14 @@ final class UserFollowController extends Controller
             throw new \RuntimeException('Пользователь не найден');
         }
 
-        $this->followService->subscribe($user, $userId);
+        $this->followCommandService->subscribe($user, $userId);
 
         return response(['success' => true]);
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function unsubscribe(string $userId): Response|Application|ResponseFactory
     {
         /** @var User $user */
@@ -46,7 +53,7 @@ final class UserFollowController extends Controller
             throw new \RuntimeException('Пользователь не найден');
         }
 
-        $this->followService->unsubscribe($user, $userId);
+        $this->followCommandService->unsubscribe($user, $userId);
 
         return response(['success' => true]);
     }

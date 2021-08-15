@@ -48,7 +48,10 @@ class PostTest extends TestAbstract
 
     public function testRead(): void
     {
-        DB::table('users_posts')->delete();
+        DB::table('users_posts')->whereIn('user_id', [
+            '00000000-0000-0000-0000-000000000001',
+            '00000000-0000-0000-0000-000000000002',
+        ])->delete();
 
         $token = $this->token('user1@mail.ru');
 

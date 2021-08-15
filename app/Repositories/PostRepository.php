@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Dto\Post\PostDto;
 use App\Models\Post;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -14,30 +15,12 @@ use Throwable;
 final class PostRepository
 {
 
-    public function getPostsList(string $userId)
+    public function getPostsList(string $userId): Collection|array
     {
-        //$followerPost = Post::query()->has('user.followers');
-
-        $selfPost = Post::query()
-            ->whereHas('followers', function (Builder $query) use ($userId) {
-                $query->where('owner_id', $userId);
-            })
-            //->join('followers', 'followers.owner_id', '=', 'post.user_id')
-            //->crossJoin('followers', 'followers.owner_id', '=', 'post.user_id')
-            //->where('followers.owner_id', $userId)
-            //->union($followerPost)
-            ->get()
-        ;
-
-        //echo $selfPost->toSql();
-        //die;
-
-       // echo '<pre>' . print_r($selfPost->toSql(), true) . '</pre>';
-       // die;
-
-       // echo '<pre>' . print_r($followerPost->, true) . '</pre>';
-        return $selfPost;
-        return $followerPost;
+        return Post::query()
+            ->whereHas('users', function (Builder $query) use ($userId) {
+                $query->where('user_id', $userId);
+            })->get();
     }
 
     public function getById(string $id): Builder|Model|Post

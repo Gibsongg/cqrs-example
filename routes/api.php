@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserFollowController;
-use App\User\Http\Controllers\RegistrationController;
+use App\Post\Http\PostController;
+
+use App\User\Http\Controllers\UserController;
+use App\User\Http\Controllers\UserFollowController;
 use Illuminate\Support\Facades\Route;
 
 /*
